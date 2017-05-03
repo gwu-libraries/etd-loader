@@ -109,7 +109,7 @@ class EtdLoaderTest(TestCase):
             """<?xml version="1.0" encoding="UTF-8"?>
                 <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
                     <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
-                        <DISS_title>Tensile Capacity of Single-Angle Shear Connections Considering Prying Action</DISS_title>
+                        <DISS_title>Tensile Capacity of Single-Angle Shear Connections Considering Prying Action.</DISS_title>
                     </DISS_description>
                 </DISS_submission>
             """)
@@ -117,6 +117,67 @@ class EtdLoaderTest(TestCase):
         self.assert_field(record['245'], {
             'a': 'Tensile Capacity of Single-Angle Shear Connections Considering Prying Action',
             'h': '[electronic resource].'},
+                          indicator1='1', indicator2='0')
+
+    def test_create_marc_record_245_quotes(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_title>Tensile Capacity of "Single-Angle Shear Connections" Considering 'Prying Action'</DISS_title>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['245'], {
+            'a': 'Tensile Capacity of Single-Angle Shear Connections Considering Prying Action',
+            'h': '[electronic resource].'},
+                          indicator1='1', indicator2='0')
+
+    def test_create_marc_record_245_upper(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_title>TENSILE CAPACITY OF SINGLE-ANGLE SHEAR CONNECTIONS CONSIDERING PRYING ACTION</DISS_title>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['245'], {
+            'a': 'Tensile Capacity Of Single-Angle Shear Connections Considering Prying Action',
+            'h': '[electronic resource].'},
+                          indicator1='1', indicator2='0')
+
+    def test_create_marc_record_245_leading_article(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_title>The Tensile Capacity of Single-Angle Shear Connections Considering Prying Action</DISS_title>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['245'], {
+            'a': 'The Tensile Capacity of Single-Angle Shear Connections Considering Prying Action',
+            'h': '[electronic resource].'},
+                          indicator1='1', indicator2='4')
+
+    def test_create_marc_record_245_subtitle(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_title>Tensile Capacity of Single-Angle Shear Connections Considering Prying Action: The Real Story</DISS_title>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['245'], {
+            'a': 'Tensile Capacity of Single-Angle Shear Connections Considering Prying Action',
+            'b': 'The Real Story',
+            'h': '[electronic resource]: '},
                           indicator1='1', indicator2='0')
 
     def test_create_marc_record_710(self):
@@ -135,23 +196,101 @@ class EtdLoaderTest(TestCase):
             'a': 'George Washington University.',
             'b': 'Civil Engineering.'},
                           indicator1='2')
-        # TODO 264, 500, 502, 008
-        # =LDR  00000nam  22000007a 4500
-        # =001  etd_11053_
-        # =003  MiAaPQ
-        # =006  m\\\\fo\\d\\\\\\\\
-        # =007  cr\mnu\\\aacaa
-        # =040  \\$aMiAaPQ$beng$cDGW$dDGW
-        # =049  \\$aDGWW
-        # =504  \\$aIncludes bibliographical references.
-        # =538  \\$aMode of access: Internet
-        # =852  8\$bgwg ed$hGW: Electronic Dissertation
-        # =856  40$uhttp://repo/11053$zClick here to access.
-        # =996  \\$aNew title added ; 20170404
-        # =998  \\$cgwjshieh ; UMI-ETDxml conv ; 20170404
 
+    def test_create_marc_record_500(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_dates>
+                            <DISS_comp_date>2011</DISS_comp_date>
+                            <DISS_accept_date>01/01/2011</DISS_accept_date>
+                        </DISS_dates>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['500'], {
+            'a': 'Title and description based on DISS metadata (ProQuest UMI) as of 01/01/2011.'
+        })
 
-        print(record)
+    def test_create_marc_record_502(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_dates>
+                            <DISS_comp_date>2011</DISS_comp_date>
+                            <DISS_accept_date>01/01/2011</DISS_accept_date>
+                        </DISS_dates>
+                        <DISS_degree>M.S.</DISS_degree>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['502'], {
+            'a': 'Thesis',
+            'b': '(M.S.)--',
+            'c': 'George Washington University,',
+            'd': '2011.'
+        })
+
+    def test_create_marc_record_264(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_dates>
+                            <DISS_comp_date>2011</DISS_comp_date>
+                            <DISS_accept_date>01/01/2011</DISS_accept_date>
+                        </DISS_dates>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['264'], {
+            'a': '[Washington, D. C.] :',
+            'b': 'George Washington University,',
+            'c': '2011.'
+        }, indicator1='3', indicator2='0')
+
+    def test_create_marc_record_100_700(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_authorship>
+                        <DISS_author type="primary">
+                            <DISS_name>
+                                <DISS_surname>Blass</DISS_surname>
+                                <DISS_fname>Deborah</DISS_fname>
+                                <DISS_middle>A.</DISS_middle>
+                                <DISS_suffix/>
+                                <DISS_affiliation>George Washington University</DISS_affiliation>
+                            </DISS_name>
+                        </DISS_author>
+                    </DISS_authorship>
+                    <DISS_authorship>
+                        <DISS_author type="secondary">
+                            <DISS_name>
+                                <DISS_surname>Kaufman</DISS_surname>
+                                <DISS_fname>Annette</DISS_fname>
+                                <DISS_middle />
+                                <DISS_suffix/>
+                                <DISS_affiliation>George Washington University</DISS_affiliation>
+                            </DISS_name>
+                        </DISS_author>
+                    </DISS_authorship>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        self.assert_field(record['100'], {
+            'a': 'Blass, Deborah A.',
+        }, indicator2='1')
+        self.assert_field(record['700'], {
+            'a': 'Kaufman, Annette.',
+        }, indicator2='1')
+
+    # TODO: Test 008
 
 
 class IdStoreTest(TestCase):

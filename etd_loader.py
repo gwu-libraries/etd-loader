@@ -233,7 +233,7 @@ class EtdLoader:
         raw_abstract_text = ""
         for para_elem in metadata_tree.findall('DISS_content/DISS_abstract/DISS_para'):
             raw_abstract_text += para_elem.text
-        abstract_text = BeautifulSoup(raw_abstract_text).text
+        abstract_text = BeautifulSoup(raw_abstract_text, 'html.parser').text
         print(abstract_text)
         if abstract_text:
             record.add_ordered_field(
@@ -245,6 +245,7 @@ class EtdLoader:
                     ]
                 )
             )
+
         keywords = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_keyword')
         if keywords is not None:
             clean_keywords = keywords.replace(',', ';').replace(':', ';').replace('.', ';')
@@ -257,18 +258,49 @@ class EtdLoader:
                     ]
                 )
             )
-        title = metadata_tree.findtext('DISS_description/DISS_title')
-        if title:
-            record.add_ordered_field(
-                pymarc.Field(
-                    tag='245',
-                    indicators=['1', '0'],
-                    subfields=[
-                        'a', title,
-                        'h', '[electronic resource].'
-                    ]
+
+        full_title = metadata_tree.findtext('DISS_description/DISS_title')
+        if full_title:
+            # Remove " and '
+            full_title = full_title.replace('\'', '').replace('"', '')
+            if full_title == full_title.upper():
+                full_title = full_title.title()
+
+            # Look for leading articles
+            indicator2 = '0'
+            if full_title.startswith('The '):
+                indicator2 = '4'
+            elif full_title.startswith('A '):
+                indicator2 = '2'
+            elif full_title.startswith('An '):
+                indicator2 = '3'
+            if ':' in full_title:
+                title, subtitle = full_title.split(':', maxsplit=1)
+                subtitle = subtitle.lstrip(' ')
+                record.add_ordered_field(
+                    pymarc.Field(
+                        tag='245',
+                        indicators=['1', indicator2],
+                        subfields=[
+                            'a', title,
+                            'h', '[electronic resource]: ',
+                            'b', subtitle
+                        ]
+                    )
                 )
-            )
+            else:
+                full_title = full_title.rstrip('.')
+                record.add_ordered_field(
+                    pymarc.Field(
+                        tag='245',
+                        indicators=['1', indicator2],
+                        subfields=[
+                            'a', full_title,
+                            'h', '[electronic resource].'
+                        ]
+                    )
+                )
+
         department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
         if department:
             record.add_ordered_field(
@@ -334,27 +366,34 @@ class EtdLoader:
             )
 
         # Primary authors get added to 100 field else 700 field.
-        for name_elem in metadata_tree.findall('DISS_authorship/DISS_author[@type="primary"]/DISS_name'):
-            print(name_elem)
-
-        # print(record)
-        # TODO: DISS_author
+        for author_elem in metadata_tree.findall('DISS_authorship/DISS_author'):
+            record.add_ordered_field(
+                pymarc.Field(
+                    tag='100' if author_elem.attrib.get('type', 'primary') == 'primary' else '700',
+                    indicators=[' ', '1'],
+                    subfields=[
+                        'a', self._fullname(author_elem.find('DISS_name'))
+                    ]
+                )
+            )
 
         # TODO: ISBN
         # marc_out.add("=020  \\\\$a" + cdata);
         return record
 
-    # @staticmethod
-    # def _fullname(name_elem):
-    #     fullname = LAST
-    #     if FIRST:
-    #         fullname = fullname + ", " + FIRST
-    #         if MIDDLE:
-    #             fullname += MIDDLE
-    #
-    #     if not fullname.endswith('.'):
-    #         fullname += '.'
-    #     return fullname
+    @staticmethod
+    def _fullname(name_elem):
+        full_name = name_elem.findtext('DISS_surname')
+        first_name = name_elem.findtext('DISS_fname')
+        middle_name = name_elem.findtext('DISS_middle')
+        if first_name:
+            full_name = ', '.join([full_name, first_name])
+            if middle_name:
+                full_name = " ".join([full_name, middle_name])
+
+        if not full_name.endswith('.'):
+            full_name += '.'
+        return full_name
 
     def _extract_metadata_file(self, etd_filepath):
         with zipfile.ZipFile(etd_filepath, 'r') as etd_file:
