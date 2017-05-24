@@ -292,6 +292,145 @@ class EtdLoaderTest(TestCase):
 
     # TODO: Test 008
 
+    def test_create_repo_metadata_creator_and_contributor(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_authorship>
+                        <DISS_author type="primary">
+                            <DISS_name>
+                                <DISS_surname>Blass</DISS_surname>
+                                <DISS_fname>Deborah</DISS_fname>
+                                <DISS_middle>A.</DISS_middle>
+                                <DISS_suffix/>
+                                <DISS_affiliation>George Washington University</DISS_affiliation>
+                            </DISS_name>
+                        </DISS_author>
+                    </DISS_authorship>
+                    <DISS_authorship>
+                        <DISS_author type="secondary">
+                            <DISS_name>
+                                <DISS_surname>Kaufman</DISS_surname>
+                                <DISS_fname>Annette</DISS_fname>
+                                <DISS_middle />
+                                <DISS_suffix/>
+                                <DISS_affiliation>George Washington University</DISS_affiliation>
+                            </DISS_name>
+                        </DISS_author>
+                    </DISS_authorship>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('Blass, Deborah A.', repo_metadata['creator'])
+        self.assertEqual(['Kaufman, Annette'], repo_metadata['contributor'])
+
+    def test_create_repo_metadata_date_created(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_dates>
+                            <DISS_comp_date>2011</DISS_comp_date>
+                        </DISS_dates>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('2011', repo_metadata['date_created'])
+
+    def test_create_repo_metadata_keyword(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_categorization>
+                          <DISS_keyword>bolted connections, finite element, prying action, shear connections, single angle, structural integrity</DISS_keyword>
+                        </DISS_categorization>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual(['bolted connections',
+                          'finite element',
+                          'prying action',
+                          'shear connections',
+                          'single angle',
+                          'structural integrity'], repo_metadata['keyword'])
+
+    def test_create_repo_metadata_language(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_categorization>
+                            <DISS_language>en</DISS_language>
+                        </DISS_categorization>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('en', repo_metadata['language'])
+
+    def test_create_repo_metadata_title(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_title>Tensile Capacity of Single-Angle Shear Connections Considering Prying Action</DISS_title>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('Tensile Capacity of Single-Angle Shear Connections Considering Prying Action',
+                         repo_metadata['title'])
+
+    def test_create_repo_metadata_description(self):
+        # TODO: Need example of HTML markup to test.
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_content>
+                        <DISS_abstract>
+                          <DISS_para>After the attacks on the World Trade Centers on September 11, 2001, engineers agreed that work needed to be done to increase the robustness of structures.  Research has increased in many areas including progressive collapse of structures, structural response to fires, and other effects of extreme loading conditions.  As a result of this research, building codes have been altered to include increased protection against these events.  One newly implemented structural integrity provision for the 2009 International Building Code (IBC) includes the need to provide a minimum tensile capacity in simple shear steel connections.</DISS_para>
+                          <DISS_para>This thesis is a continuation of a previously started project by the Department of Civil and Environmental Engineering at George Washington University for the American Institute of Steel Construction.  The work included experimental testing of simple shear all-bolted single-angle connections to determine the failure mechanism and ultimate strength.  The single-angle connection is one of the most economical and widely used simple shear connections in buildings and therefore testing was undertaken to ensure that these connections would comply with the new structural integrity provisions.  The angles failed due to two mechanisms: bolt tensile failure and shear fracture of the angle.</DISS_para>
+                          <DISS_para>Based on the results of the single-angle experiments, a finite-element model was created in order to investigate an interesting outcome regarding the prying action of the single-angle connection tests. The observed strength is about three times larger than the current AISC prying equations predict, which is overly conservative.  The AISC prying equations are largely based on research which involved relatively rigid symmetrical tee-sections so the behavior of relatively flexible single-angles would be expectantly different. </DISS_para>
+                          <DISS_para>Prior to the single-angle tests, there is very minimal published research on single-angles under tensile load.  The test data supporting the AISC prying equations was mostly based on less flexible connections.  Prying action involves a complex interaction between tensile, shear, and moments that occurs more so when elements are flexible and able to have large deformations, effectively causing an increase in the load on the bolts.  </DISS_para>
+                          <DISS_para>Following the finite-element model and a study of different methods for calculating the prying action capacity, it was determined that a new model should be adopted by AISC for prying action of single-angles because the current prying equations do not accurately predict the behavior for single-angle connections. The British Steel Construction Institute P212 publication presents a large displacement analysis method in its Appendix D for determining the effects of prying action on bolt strength for double angle connections.  In this thesis, that model has been altered for single-angles and reasonably predicts the capacity of the tested connection by determining a reduced bolt stress.  Therefore an equation for the limit state of bolt tensile failure with prying action for single-angles has been proposed to be adopted by AISC for connections with angle thickness of 5/8-in or less. Typically, simple-shear connections such as single-angles are relatively flexible and therefore more research should be conducted on flexible bolted connections where prying action would occur.</DISS_para>
+                        </DISS_abstract>
+                    </DISS_content>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('After the attacks on the World Trade Centers on September 11, 2001, engineers agreed that work needed to be done to increase the robustness of structures.  Research has increased in many areas including progressive collapse of structures, structural response to fires, and other effects of extreme loading conditions.  As a result of this research, building codes have been altered to include increased protection against these events.  One newly implemented structural integrity provision for the 2009 International Building Code (IBC) includes the need to provide a minimum tensile capacity in simple shear steel connections.This thesis is a continuation of a previously started project by the Department of Civil and Environmental Engineering at George Washington University for the American Institute of Steel Construction.  The work included experimental testing of simple shear all-bolted single-angle connections to determine the failure mechanism and ultimate strength.  The single-angle connection is one of the most economical and widely used simple shear connections in buildings and therefore testing was undertaken to ensure that these connections would comply with the new structural integrity provisions.  The angles failed due to two mechanisms: bolt tensile failure and shear fracture of the angle.Based on the results of the single-angle experiments, a finite-element model was created in order to investigate an interesting outcome regarding the prying action of the single-angle connection tests. The observed strength is about three times larger than the current AISC prying equations predict, which is overly conservative.  The AISC prying equations are largely based on research which involved relatively rigid symmetrical tee-sections so the behavior of relatively flexible single-angles would be expectantly different. Prior to the single-angle tests, there is very minimal published research on single-angles under tensile load.  The test data supporting the AISC prying equations was mostly based on less flexible connections.  Prying action involves a complex interaction between tensile, shear, and moments that occurs more so when elements are flexible and able to have large deformations, effectively causing an increase in the load on the bolts.  Following the finite-element model and a study of different methods for calculating the prying action capacity, it was determined that a new model should be adopted by AISC for prying action of single-angles because the current prying equations do not accurately predict the behavior for single-angle connections. The British Steel Construction Institute P212 publication presents a large displacement analysis method in its Appendix D for determining the effects of prying action on bolt strength for double angle connections.  In this thesis, that model has been altered for single-angles and reasonably predicts the capacity of the tested connection by determining a reduced bolt stress.  Therefore an equation for the limit state of bolt tensile failure with prying action for single-angles has been proposed to be adopted by AISC for connections with angle thickness of 5/8-in or less. Typically, simple-shear connections such as single-angles are relatively flexible and therefore more research should be conducted on flexible bolted connections where prying action would occur.',
+                         repo_metadata['description'])
+
+    def test_create_repo_metadata_gw_affiliation(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_institution>
+                          <DISS_inst_contact>Civil Engineering</DISS_inst_contact>
+                        </DISS_institution>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('Civil Engineering', repo_metadata['gw_affiliation'])
+
+    def test_create_repo_metadata_degree(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_degree>M.S.</DISS_degree>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('M.S.', repo_metadata['degree'])
+
 
 class IdStoreTest(TestCase):
     def setUp(self):

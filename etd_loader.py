@@ -234,7 +234,6 @@ class EtdLoader:
         for para_elem in metadata_tree.findall('DISS_content/DISS_abstract/DISS_para'):
             raw_abstract_text += para_elem.text
         abstract_text = BeautifulSoup(raw_abstract_text, 'html.parser').text
-        print(abstract_text)
         if abstract_text:
             record.add_ordered_field(
                 pymarc.Field(
@@ -372,7 +371,7 @@ class EtdLoader:
                     tag='100' if author_elem.attrib.get('type', 'primary') == 'primary' else '700',
                     indicators=[' ', '1'],
                     subfields=[
-                        'a', self._fullname(author_elem.find('DISS_name'))
+                        'a', self._marc_fullname(author_elem.find('DISS_name'))
                     ]
                 )
             )
@@ -391,11 +390,17 @@ class EtdLoader:
             if middle_name:
                 full_name = " ".join([full_name, middle_name])
 
+        return full_name
+
+    @staticmethod
+    def _marc_fullname(name_elem):
+        full_name = EtdLoader._fullname(name_elem)
         if not full_name.endswith('.'):
             full_name += '.'
         return full_name
 
-    def _extract_metadata_file(self, etd_filepath):
+    @staticmethod
+    def _extract_metadata_file(etd_filepath):
         with zipfile.ZipFile(etd_filepath, 'r') as etd_file:
             for filename in etd_file.namelist():
                 if filename.endswith('_DATA.xml'):
@@ -473,9 +478,63 @@ class EtdLoader:
                 shutil.rmtree(etd_temp_path, ignore_errors=True)
 
     def create_repository_metadata(self, metadata_tree):
-        return {
-            'title': metadata_tree.find('DISS_description/DISS_title').text
+        repository_metadata = {
+            # 'title': metadata_tree.find('DISS_description/DISS_title').text
+            'contributor': [],
+            'keyword': []
         }
+
+        # creator and contributors
+        for author_elem in metadata_tree.findall('DISS_authorship/DISS_author'):
+            full_name = self._fullname(author_elem.find('DISS_name'))
+            if author_elem.attrib.get('type', 'primary') == 'primary':
+                repository_metadata['creator'] = full_name
+            else:
+                repository_metadata['contributor'].append(full_name)
+
+        # date_created
+        comp_date = metadata_tree.findtext('DISS_description/DISS_dates/DISS_comp_date')
+        completion_year = comp_date[0:4] if (comp_date and len(comp_date) >= 4) else None
+        if completion_year:
+            repository_metadata['date_created'] = completion_year
+
+        # keyword
+        keywords = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_keyword')
+        if keywords is not None:
+            clean_keywords = keywords.replace(',', ';').replace(':', ';').replace('.', ';')
+            for keyword in clean_keywords.split(';'):
+                repository_metadata['keyword'].append(keyword.strip())
+
+        # language
+        lang = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_language')
+        if lang:
+            repository_metadata['language'] = lang
+
+        # title
+        full_title = metadata_tree.findtext('DISS_description/DISS_title')
+        if full_title:
+            repository_metadata['title'] = full_title
+
+        # description
+        raw_abstract_text = ""
+        for para_elem in metadata_tree.findall('DISS_content/DISS_abstract/DISS_para'):
+            raw_abstract_text += para_elem.text
+        abstract_text = BeautifulSoup(raw_abstract_text, 'html.parser').text
+        if abstract_text:
+            repository_metadata['description'] = abstract_text
+
+        # gw_affiliation
+        department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
+        if department:
+            repository_metadata['gw_affiliation'] = department
+        # TODO: embargo_date
+
+        # degree
+        degree = metadata_tree.findtext('DISS_description/DISS_degree')
+        if degree:
+            repository_metadata['degree'] = degree
+
+        return repository_metadata
 
     @staticmethod
     def find_etd_files(metadata_tree, etd_temp_path):
