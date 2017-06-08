@@ -431,6 +431,18 @@ class EtdLoaderTest(TestCase):
         repo_metadata = self.loader.create_repository_metadata(metadata_tree)
         self.assertEqual('M.S.', repo_metadata['degree'])
 
+    def test_create_repo_metadata_embargo(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_restriction>
+                        <DISS_sales_restriction code="1" remove="11/20/2015"/>
+                    </DISS_restriction>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual('2015-11-20', repo_metadata['embargo_date'])
+
 
 class IdStoreTest(TestCase):
     def setUp(self):

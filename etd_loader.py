@@ -16,6 +16,7 @@ import smtplib
 import tempfile
 import json
 from bs4 import BeautifulSoup
+import argparse
 
 log = logging.getLogger(__name__)
 
@@ -527,7 +528,12 @@ class EtdLoader:
         department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
         if department:
             repository_metadata['gw_affiliation'] = department
-        # TODO: embargo_date
+
+        # embargo date
+        embargo_elem = metadata_tree.find('DISS_restriction/DISS_sales_restriction')
+        if embargo_elem is not None and 'remove' in embargo_elem.attrib:
+            embargo_date = datetime.strptime(embargo_elem.attrib['remove'], '%m/%d/%Y').date()
+            repository_metadata['embargo_date'] = embargo_date.isoformat()
 
         # degree
         degree = metadata_tree.findtext('DISS_description/DISS_degree')
@@ -682,11 +688,27 @@ class EtdLoaderException(Exception):
 if __name__ == '__main__':
     import config
 
+    parser = argparse.ArgumentParser(description='Loads Proquest ETDs into GW Scholarspace and creates MARC records')
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--only', help='Perform only this step', choices=['retrieve', 'marc', 'import'])
+
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.debug else logging.INFO
+    )
     logging.basicConfig(level=logging.DEBUG)
 
     l = EtdLoader(config.base_path, config.etd_ftp_host, config.etd_ftp_username, config.etd_ftp_password,
                   config.etd_ftp_path, config.etd_ftp_port, config.mail_host, config.mail_username,
                   config.mail_password, config.mail_port, config.marc_mail_to)
-    # l.retrieve_etd_files()
-    # l.create_marc_records()
-    l.import_etds()
+    if args.only == 'retrieve':
+        l.retrieve_etd_files()
+    elif args.only == 'marc':
+        l.create_marc_records()
+    elif args.only == 'import':
+        l.import_etds()
+    else:
+        l.retrieve_etd_files()
+        l.create_marc_records()
+        l.import_etds()
