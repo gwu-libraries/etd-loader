@@ -14,7 +14,7 @@ class EtdLoaderTest(TestCase):
     def setUp(self):
         self.base_path = tempfile.mkdtemp()
         self.loader = EtdLoader(self.base_path, 'host', 'username', 'password', '/path', 22, 'mail_host',
-                                'mail_username', 'mail_password', 123, 'marc_mail_to')
+                                'mail_username', 'mail_password', 123, 'marc_mail_to', None, None, 'http://localhost/etd/')
         self.loader.now = datetime(2017, 4, 5)
 
     def tearDown(self):
@@ -42,7 +42,7 @@ class EtdLoaderTest(TestCase):
             """<?xml version="1.0" encoding="UTF-8"?>
                 <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N" />
             """)
-        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "11053")
         self.assertEqual('00000nam  22000007a 4500', record.leader)
         self.assertEqual('MiAaPQ', record['003'].data)
         self.assertEqual('m    fo  d        ', record['006'].data)
@@ -52,8 +52,8 @@ class EtdLoaderTest(TestCase):
         self.assert_field(record['504'], {'a': 'Includes bibliographical references.'})
         self.assert_field(record['538'], {'a': 'Mode of access: Internet'})
         self.assert_field(record['852'], {'b': 'gwg ed', 'h': 'GW: Electronic Dissertation'}, indicator1='8')
-        self.assert_field(record['856'], {'u': 'http://repo/11053', 'z': 'Click here to access.'}, indicator1='4',
-                          indicator2='0')
+        self.assert_field(record['856'], {'u': 'http://localhost/etd/11053', 'z': 'Click here to access.'},
+                          indicator1='4', indicator2='0')
         self.assert_field(record['996'], {'a': 'New title added ; 20170405'})
         self.assert_field(record['998'], {'c': 'gwjshieh ; UMI-ETDxml conv ; 20170405'})
 

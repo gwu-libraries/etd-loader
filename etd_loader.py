@@ -17,6 +17,7 @@ import tempfile
 import json
 from bs4 import BeautifulSoup
 import argparse
+import subprocess
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +44,8 @@ language_map = {
 class EtdLoader:
     def __init__(self, base_path,
                  etd_ftp_host, etd_ftp_username, etd_ftp_password, etd_ftp_path, etd_ftp_port,
-                 mail_host, mail_username, mail_password, mail_port, marc_mail_to):
+                 mail_host, mail_username, mail_password, mail_port, marc_mail_to, ingest_path, ingest_command,
+                 repository_base_url):
         log.info('Base path is %s', base_path)
         self.base_path = base_path
         # Contains ETD files that have been retrieved from ETD FTP
@@ -85,6 +87,10 @@ class EtdLoader:
         self.mail_port = mail_port
         self.marc_mail_to = marc_mail_to
 
+        self.ingest_path = ingest_path
+        self.ingest_command = ingest_command
+        self.repository_base_url = repository_base_url
+
     def retrieve_etd_files(self):
         """
         Retrieves ETD files from ETD FTP using SFTP.
@@ -113,9 +119,9 @@ class EtdLoader:
             for etd_filename in os.listdir(self.etd_to_be_marced_path):
                 etd_id = self._extract_etd_id_from_filename(etd_filename)
                 try:
-                    # If there is an existing repository id, then skip.
-                    if etd_id in self.store:
-                        log.info('%s exists, so not creating MARC record', etd_id)
+                    # If there is not an existing repository id, then skip.
+                    if etd_id not in self.store:
+                        log.info('%s does not have repository id, so not creating MARC record', etd_id)
                     # Otherwise, extract XML metadata file and crosswalk to MARC
                     else:
                         record = self.create_marc_record(etd_filename, self.store[etd_id])
@@ -138,7 +144,6 @@ class EtdLoader:
             repository_id)
 
     def _create_marc_record(self, metadata_tree, etd_filename, repository_id):
-        # log.info(prettify(metadata_tree.getroot()))
         running_date = self.now.strftime('%Y%m%d')
         record = pymarc.Record()
         record.leader = '00000nam  22000007a 4500'
@@ -201,7 +206,7 @@ class EtdLoader:
                 tag='856',
                 indicators=['4', '0'],
                 subfields=[
-                    'u', repository_id,
+                    'u', '{}{}'.format(self.repository_base_url, repository_id),
                     'z', 'Click here to access.'
                 ]),
             pymarc.Field(
@@ -565,12 +570,25 @@ class EtdLoader:
         return binary_filepath, attachment_filepaths
 
     def repo_import(self, repo_metadata_filepath, etd_filepath, attachment_filepaths, etd_id, repository_id):
-        temp_filepath = os.path.join('/tmp', etd_id)
-        log.info("Fake importing %s to %s with repository id %s. ETD file is %s and attachements are %s", etd_id,
-                 temp_filepath, repository_id, etd_filepath, attachment_filepaths)
-        os.makedirs(temp_filepath, exist_ok=True)
-        shutil.copy(repo_metadata_filepath, temp_filepath)
-        return "http://repo/{}".format(etd_id)
+        log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filepath, attachment_filepaths)
+        # rake gwss:ingest_etd -- --manifest='path-to-manifest-json-file' --primaryfile='path-to-primary-attachment-file/myfile.pdf' --otherfiles='path-to-all-other-attachments-folder'
+        command = [os.path.join(self.ingest_path, self.ingest_command), '--',
+                   '--manifest', repo_metadata_filepath,
+                   '--primaryfile', etd_filepath]
+        if attachment_filepaths:
+            command.extend(['--otherfiles', ','.join(attachment_filepaths)])
+        if repository_id:
+            log.info('%s is an update.', etd_id)
+            command.extend(['--update-item-id', repository_id])
+        completed_process = subprocess.run(command,
+                                           cwd=self.ingest_path,
+                                           stdout=subprocess.PIPE,
+                                           encoding='utf-8')
+        # Raise an error if ingest failed
+        completed_process.check_returncode()
+        repository_id = completed_process.stdout.rstrip('\n')
+        log.info('Repository id for %s is %s', etd_id, repository_id)
+        return repository_id
 
     @staticmethod
     def unzip(zip_filepath, dest_path):
@@ -690,7 +708,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Loads Proquest ETDs into GW Scholarspace and creates MARC records')
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--only', help='Perform only this step', choices=['retrieve', 'marc', 'import'])
+    parser.add_argument('--only', help='Perform only this step', choices=['retrieve', 'import', 'marc'])
 
     args = parser.parse_args()
 
@@ -701,7 +719,8 @@ if __name__ == '__main__':
 
     l = EtdLoader(config.base_path, config.etd_ftp_host, config.etd_ftp_username, config.etd_ftp_password,
                   config.etd_ftp_path, config.etd_ftp_port, config.mail_host, config.mail_username,
-                  config.mail_password, config.mail_port, config.marc_mail_to)
+                  config.mail_password, config.mail_port, config.marc_mail_to,
+                  config.ingest_path, config.ingest_command, config.repo_base_url)
     if args.only == 'retrieve':
         l.retrieve_etd_files()
     elif args.only == 'marc':
@@ -710,5 +729,5 @@ if __name__ == '__main__':
         l.import_etds()
     else:
         l.retrieve_etd_files()
-        l.create_marc_records()
         l.import_etds()
+        l.create_marc_records()
