@@ -39,11 +39,11 @@ etd-loader performs the following functions:
 ## Running
 To run etd-loader:
 
-    python etd-loader.py
+    python etd_loader.py
     
 To run single steps:
 
-    python etd-loader.py --only <retrieve or import or marc>
+    python etd_loader.py --only <retrieve or import or marc>
     
 Running all steps will:
 1. Retrieve ETD files from the remote server.
