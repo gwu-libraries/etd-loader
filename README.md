@@ -7,28 +7,30 @@ etd-loader performs the following functions:
 * Creates MARC records for ETDs.
 
 ## Setup
-0. Install prerequisite system packages needed for cryptography as per https://cryptography.io/en/latest/installation.  For Ubuntu, this would look like:
+Requires Python >= 3.5
+
+1. Install prerequisite system packages needed for cryptography as per https://cryptography.io/en/latest/installation.  For Ubuntu, this would look like:
 
         sudo apt-get install build-essential libssl-dev libffi-dev python3-devk
 
-1. Get this code.
+2. Get this code.
 
         git clone https://github.com/gwu-libraries/etd-loader.git
 
-2. Create a virtualenv.
+3. Create a virtualenv.
 
         virtualenv -p python3 ENV
         source ENV/bin/activate
     
-3. Install dependencies.
+4. Install dependencies.
 
         pip install -r requirements.txt
     
-4. Copy configuration file.
+5. Copy configuration file.
 
         cp example.config.py config.py
     
-5. Edit configuration file. The file is annotated with descriptions of the configuration options.
+6. Edit configuration file. The file is annotated with descriptions of the configuration options.
 
 ## Directory structure
 
