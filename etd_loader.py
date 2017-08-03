@@ -50,23 +50,28 @@ class EtdLoader:
         self.base_path = base_path
         # Contains ETD files that have been retrieved from ETD FTP
         self.etd_store_path = os.path.join(self.base_path, 'etd_store')
-        os.makedirs(self.etd_store_path, exist_ok=True)
+        if not os.path.exists(self.etd_store_path):
+            os.makedirs(self.etd_store_path)
 
         # Contains files to be imported into repository
         self.import_store_path = os.path.join(self.base_path, 'import_store')
-        os.makedirs(self.import_store_path, exist_ok=True)
+        if not os.path.exists(self.import_store_path):
+            os.makedirs(self.import_store_path)
 
         # Contains previously created MARC records
         self.marc_store_path = os.path.join(self.base_path, 'marc_store')
-        os.makedirs(self.marc_store_path, exist_ok=True)
+        if not os.path.exists(self.marc_store_path):
+            os.makedirs(self.marc_store_path)
 
         # Contains ETD files that are to be imported into repository
         self.etd_to_be_imported_path = os.path.join(self.base_path, 'etd_to_be_imported')
-        os.makedirs(self.etd_to_be_imported_path, exist_ok=True)
+        if not os.path.exists(self.etd_to_be_imported_path):
+            os.makedirs(self.etd_to_be_imported_path)
 
         # Contains ETD files that are to be crosswalked to MARC records
         self.etd_to_be_marced_path = os.path.join(self.base_path, 'etd_to_be_marced')
-        os.makedirs(self.etd_to_be_marced_path, exist_ok=True)
+        if not os.path.exists(self.etd_to_be_marced_path):
+            os.makedirs(self.etd_to_be_marced_path)
 
         self.store = IdStore(self.base_path)
 
@@ -280,8 +285,9 @@ class EtdLoader:
             elif full_title.startswith('An '):
                 indicator2 = '3'
             if ':' in full_title:
-                title, subtitle = full_title.split(':', maxsplit=1)
-                subtitle = subtitle.lstrip(' ')
+                split_title = full_title.split(':')
+                title = split_title[0]
+                subtitle = ':'.join(split_title[1:]).lstrip(' ')
                 record.add_ordered_field(
                     pymarc.Field(
                         tag='245',
@@ -440,13 +446,13 @@ class EtdLoader:
         outer.attach(msg)
 
         # Send the email
-        with smtplib.SMTP(self.mail_host, self.mail_port) as s:
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
-            s.login(self.mail_username, self.mail_password)
-            s.sendmail(self.mail_username, [self.marc_mail_to], outer.as_string())
-            s.close()
+        s = smtplib.SMTP(self.mail_host, self.mail_port)
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+        s.login(self.mail_username, self.mail_password)
+        s.sendmail(self.mail_username, [self.marc_mail_to], outer.as_string())
+        s.close()
         log.info("Sent email to %s with %s attached", self.marc_mail_to, self.marc_record_filename)
 
     def import_etds(self):
@@ -580,13 +586,8 @@ class EtdLoader:
         if repository_id:
             log.info('%s is an update.', etd_id)
             command.extend(['--update-item-id', repository_id])
-        completed_process = subprocess.run(command,
-                                           cwd=self.ingest_path,
-                                           stdout=subprocess.PIPE,
-                                           encoding='utf-8')
-        # Raise an error if ingest failed
-        completed_process.check_returncode()
-        repository_id = completed_process.stdout.rstrip('\n')
+        output = subprocess.check_output(command, cwd=self.ingest_path)
+        repository_id = output.rstrip('\n')
         log.info('Repository id for %s is %s', etd_id, repository_id)
         return repository_id
 
