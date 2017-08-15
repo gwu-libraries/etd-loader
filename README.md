@@ -11,7 +11,7 @@ Requires Python >= 3.5
 
 1. Install prerequisite system packages needed for cryptography as per https://cryptography.io/en/latest/installation.  For Ubuntu, this would look like:
 
-        sudo apt-get install build-essential libssl-dev libffi-dev python3-devk
+        sudo apt-get install build-essential libssl-dev libffi-dev python3-dev virtualenv
 
 2. Get this code.
 
