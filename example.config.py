@@ -14,6 +14,6 @@ mail_password = "password"
 # Where to send MARC records
 marc_mail_to = "rdg@gwu.edu"
 # GW ScholarSpace ingest configuration
-ingest_path = "/opt/gwss"
-ingest_command = "rake"
+ingest_path = "/opt/scholarspace/scholarspace-hyrax"
+ingest_command = "rvmsudo RAILS_ENV=production rake gwss:ingest_etd"
 repo_base_url = "https://scholarspace.library.gwu.edu/etd/"
