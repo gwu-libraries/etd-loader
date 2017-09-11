@@ -587,7 +587,7 @@ class EtdLoader:
             log.info('%s is an update.', etd_id)
             command.extend(['--update-item-id', repository_id])
         output = subprocess.check_output(command, cwd=self.ingest_path)
-        repository_id = output.rstrip('\n')
+        repository_id = output.decode('utf-8').rstrip('\n')
         log.info('Repository id for %s is %s', etd_id, repository_id)
         return repository_id
 
