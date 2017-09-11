@@ -579,13 +579,13 @@ class EtdLoader:
         log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filepath, attachment_filepaths)
         # rake gwss:ingest_etd -- --manifest='path-to-manifest-json-file' --primaryfile='path-to-primary-attachment-file/myfile.pdf' --otherfiles='path-to-all-other-attachments-folder'
         command = self.ingest_command.split(' ') + ['--',
-                                                    '--manifest', repo_metadata_filepath,
-                                                    '--primaryfile', etd_filepath]
+                                                    '--manifest=%s' % repo_metadata_filepath,
+                                                    '--primaryfile=%s' % etd_filepath]
         if attachment_filepaths:
-            command.extend(['--otherfiles', ','.join(attachment_filepaths)])
+            command.extend(['--otherfiles=%s' % ','.join(attachment_filepaths)])
         if repository_id:
             log.info('%s is an update.', etd_id)
-            command.extend(['--update-item-id', repository_id])
+            command.extend(['--update-item-id=%s' % repository_id])
         log.info("Command is: %s" % ' '.join(command))
         output = subprocess.check_output(command, cwd=self.ingest_path)
         repository_id = output.decode('utf-8').rstrip('\n')
