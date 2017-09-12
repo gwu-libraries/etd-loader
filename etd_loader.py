@@ -151,7 +151,7 @@ class EtdLoader:
     def _create_marc_record(self, metadata_tree, etd_filename, repository_id):
         running_date = self.now.strftime('%Y%m%d')
         record = pymarc.Record()
-        record.leader = '00000nam  22000007a 4500'
+        record.leader = '00000nam a22000007a 4500'
         record.add_ordered_field(
             pymarc.Field(
                 tag='001',
