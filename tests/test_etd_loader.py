@@ -43,7 +43,7 @@ class EtdLoaderTest(TestCase):
                 <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N" />
             """)
         record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "11053")
-        self.assertEqual('00000nam  22000007a 4500', record.leader)
+        self.assertEqual('00000nam a22000007a 4500', record.leader)
         self.assertEqual('MiAaPQ', record['003'].data)
         self.assertEqual('m    fo  d        ', record['006'].data)
         self.assertEqual('cr mnu   aacaa', record['007'].data)
@@ -285,12 +285,30 @@ class EtdLoaderTest(TestCase):
         record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
         self.assert_field(record['100'], {
             'a': 'Blass, Deborah A.',
-        }, indicator2='1')
+        }, indicator1='1')
         self.assert_field(record['700'], {
             'a': 'Kaufman, Annette.',
-        }, indicator2='1')
+        }, indicator1='1')
 
     # TODO: Test 008
+    def test_create_marc_record_008(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_dates>
+                            <DISS_comp_date>2011</DISS_comp_date>
+                            <DISS_accept_date>01/01/2011</DISS_accept_date>
+                        </DISS_dates>
+                        <DISS_categorization>
+                            <DISS_language>en</DISS_language>
+                        </DISS_categorization>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
+        # Remove running date
+        self.assertEqual('s2011    dcu     obm   000 0 eng d', record['008'].data[6:])
 
     def test_create_repo_metadata_creator_and_contributor(self):
         metadata_tree = ElementTree.fromstring(

@@ -372,7 +372,7 @@ class EtdLoader:
             record.add_ordered_field(
                 pymarc.Field(
                     tag='008',
-                    data='{}s{}    dcu     obm   000 0 {} d'.format(running_date, comp_date, language)
+                    data='{}s{}    dcu     obm   000 0 {} d'.format(running_date[2:], comp_date, language)
                 )
             )
 
@@ -381,7 +381,7 @@ class EtdLoader:
             record.add_ordered_field(
                 pymarc.Field(
                     tag='100' if author_elem.attrib.get('type', 'primary') == 'primary' else '700',
-                    indicators=[' ', '1'],
+                    indicators=['1', ' '],
                     subfields=[
                         'a', self._marc_fullname(author_elem.find('DISS_name'))
                     ]
