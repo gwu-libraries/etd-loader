@@ -329,8 +329,8 @@ class EtdLoader:
         if completion_year:
             record.add_ordered_field(
                 pymarc.Field(
-                    tag='264',
-                    indicators=['3', '0'],
+                    tag='260',
+                    indicators=[' ', ' '],
                     subfields=[
                         'a', '[Washington, D. C.] :',
                         'b', 'George Washington University,',
@@ -513,7 +513,7 @@ class EtdLoader:
         # keyword
         keywords = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_keyword')
         if keywords is not None:
-            clean_keywords = keywords.replace(',', ';').replace(':', ';').replace('.', ';')
+            clean_keywords = keywords.replace(',', ';').replace(':', ';')
             for keyword in clean_keywords.split(';'):
                 repository_metadata['keyword'].append(keyword.strip())
 

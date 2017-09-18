@@ -235,7 +235,7 @@ class EtdLoaderTest(TestCase):
             'd': '2011.'
         })
 
-    def test_create_marc_record_264(self):
+    def test_create_marc_record_260(self):
         metadata_tree = ElementTree.fromstring(
             """<?xml version="1.0" encoding="UTF-8"?>
                 <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
@@ -248,11 +248,11 @@ class EtdLoaderTest(TestCase):
                 </DISS_submission>
             """)
         record = self.loader._create_marc_record(metadata_tree, 'Blass_gwu_0075M_11053_DATA', "http://repo/11053")
-        self.assert_field(record['264'], {
+        self.assert_field(record['260'], {
             'a': '[Washington, D. C.] :',
             'b': 'George Washington University,',
             'c': '2011.'
-        }, indicator1='3', indicator2='0')
+        })
 
     def test_create_marc_record_100_700(self):
         metadata_tree = ElementTree.fromstring(
@@ -290,7 +290,6 @@ class EtdLoaderTest(TestCase):
             'a': 'Kaufman, Annette.',
         }, indicator1='1')
 
-    # TODO: Test 008
     def test_create_marc_record_008(self):
         metadata_tree = ElementTree.fromstring(
             """<?xml version="1.0" encoding="UTF-8"?>
