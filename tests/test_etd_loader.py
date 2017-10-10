@@ -460,6 +460,53 @@ class EtdLoaderTest(TestCase):
         repo_metadata = self.loader.create_repository_metadata(metadata_tree)
         self.assertEqual('2015-11-20', repo_metadata['embargo_date'])
 
+    def test_create_repo_metadata_advisors(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_advisor>
+                          <DISS_name>
+                            <DISS_surname>Roddis</DISS_surname>
+                            <DISS_fname>Kim</DISS_fname>
+                            <DISS_middle/>
+                          </DISS_name>
+                        </DISS_advisor>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual(['Roddis, Kim'], repo_metadata['advisors'])
+
+    def test_create_repo_metadata_committee_members(self):
+        metadata_tree = ElementTree.fromstring(
+            """<?xml version="1.0" encoding="UTF-8"?>
+                <DISS_submission publishing_option="0" embargo_code="0" third_party_search="N">
+                    <DISS_description page_count="97" type="masters" external_id="http://dissertations.umi.com/gwu:11053" apply_for_copyright="yes">
+                        <DISS_cmte_member>
+                          <DISS_name>
+                            <DISS_surname>Badie</DISS_surname>
+                            <DISS_fname>Sameh</DISS_fname>
+                            <DISS_middle/>
+                            <DISS_suffix/>
+                            <DISS_affiliation/>
+                          </DISS_name>
+                        </DISS_cmte_member>
+                        <DISS_cmte_member>
+                          <DISS_name>
+                            <DISS_surname>Silva</DISS_surname>
+                            <DISS_fname>Pedro</DISS_fname>
+                            <DISS_middle/>
+                            <DISS_suffix/>
+                            <DISS_affiliation/>
+                          </DISS_name>
+                        </DISS_cmte_member>
+                    </DISS_description>
+                </DISS_submission>
+            """)
+        repo_metadata = self.loader.create_repository_metadata(metadata_tree)
+        self.assertEqual(['Badie, Sameh', 'Silva, Pedro'], repo_metadata['committee_members'])
+
 
 class IdStoreTest(TestCase):
     def setUp(self):

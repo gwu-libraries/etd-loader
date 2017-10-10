@@ -493,7 +493,9 @@ class EtdLoader:
         repository_metadata = {
             # 'title': metadata_tree.find('DISS_description/DISS_title').text
             'contributor': [],
-            'keyword': []
+            'keyword': [],
+            'committee_members': [],
+            'advisors': []
         }
 
         # creator and contributors
@@ -550,6 +552,15 @@ class EtdLoader:
         degree = metadata_tree.findtext('DISS_description/DISS_degree')
         if degree:
             repository_metadata['degree'] = degree
+
+        # advisors
+        for advisor_elem in metadata_tree.findall('DISS_description/DISS_advisor'):
+            repository_metadata['advisors'].append(self._fullname(advisor_elem.find('DISS_name')))
+
+        # committee members
+        for member_elem in metadata_tree.findall('DISS_description/DISS_cmte_member'):
+            repository_metadata['committee_members'].append(self._fullname(member_elem.find('DISS_name')))
+
 
         return repository_metadata
 
