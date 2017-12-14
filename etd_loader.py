@@ -109,9 +109,13 @@ class EtdLoader:
         with pysftp.Connection(self.etd_ftp_host, username=self.etd_ftp_username, password=self.etd_ftp_password,
                                port=self.etd_ftp_port) as sftp:
             with sftp.cd(self.etd_ftp_path):
-                etd_ftp_files = set(sftp.listdir()) - etd_store_files
-                log.info("Retrieving %s new ETD files", len(etd_ftp_files))
-                for etd_file in etd_ftp_files:
+                etd_ftp_files = set()
+                for etd_file in sftp.listdir():
+                    if sftp.isfile(etd_file) and etd_file.lower().endswith('.zip'):
+                        etd_ftp_files.add(etd_file)
+                etd_ftp_retrieve_files = etd_ftp_files - etd_store_files
+                log.info("Retrieving %s new ETD files", len(etd_ftp_retrieve_files))
+                for etd_file in etd_ftp_retrieve_files:
                     log.info('Getting %s', etd_file)
                     sftp.get(etd_file, localpath=os.path.join(self.etd_store_path, etd_file))
                     # Copy to additional locations
