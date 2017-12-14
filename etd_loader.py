@@ -44,8 +44,8 @@ language_map = {
 class EtdLoader:
     def __init__(self, base_path,
                  etd_ftp_host, etd_ftp_username, etd_ftp_password, etd_ftp_path, etd_ftp_port,
-                 mail_host, mail_username, mail_password, mail_port, marc_mail_to, ingest_path, ingest_command,
-                 repository_base_url):
+                 mail_host, mail_username, mail_password, mail_port, marc_mail_to, ingest_path,
+                 ingest_command, ingest_depositor, repository_base_url, debug_mode):
         log.info('Base path is %s', base_path)
         self.base_path = base_path
         # Contains ETD files that have been retrieved from ETD FTP
@@ -94,7 +94,10 @@ class EtdLoader:
 
         self.ingest_path = ingest_path
         self.ingest_command = ingest_command
+        self.ingest_depositor = ingest_depositor
         self.repository_base_url = repository_base_url
+
+        self.debug_mode = debug_mode
 
     def retrieve_etd_files(self):
         """
@@ -485,13 +488,14 @@ class EtdLoader:
 
                 # Perform the import
                 new_etd_id = self.repo_import(repo_metadata_filepath, binary_filepath, attachment_filepaths, etd_id,
-                                              self.store.get(etd_id))
+                                              self.store.get(etd_id), self.ingest_depositor)
                 self.store[etd_id] = new_etd_id
                 # Delete ETD file
                 os.remove(etd_filepath)
             finally:
-                # Delete temporary directory
-                shutil.rmtree(etd_temp_path, ignore_errors=True)
+                if not self.debug_mode:
+                    # Delete temporary directory
+                    shutil.rmtree(etd_temp_path, ignore_errors=True)
 
     def create_repository_metadata(self, metadata_tree):
         repository_metadata = {
@@ -590,12 +594,13 @@ class EtdLoader:
 
         return binary_filepath, attachment_filepaths
 
-    def repo_import(self, repo_metadata_filepath, etd_filepath, attachment_filepaths, etd_id, repository_id):
+    def repo_import(self, repo_metadata_filepath, etd_filepath, attachment_filepaths, etd_id, repository_id, depositor):
         log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filepath, attachment_filepaths)
         # rake gwss:ingest_etd -- --manifest='path-to-manifest-json-file' --primaryfile='path-to-primary-attachment-file/myfile.pdf' --otherfiles='path-to-all-other-attachments-folder'
         command = self.ingest_command.split(' ') + ['--',
                                                     '--manifest=%s' % repo_metadata_filepath,
-                                                    '--primaryfile=%s' % etd_filepath]
+                                                    '--primaryfile=%s' % etd_filepath,
+                                                    '--depositor=%s' % depositor]
         if attachment_filepaths:
             command.extend(['--otherfiles=%s' % ','.join(attachment_filepaths)])
         if repository_id:
@@ -736,8 +741,8 @@ if __name__ == '__main__':
 
     l = EtdLoader(config.base_path, config.etd_ftp_host, config.etd_ftp_username, config.etd_ftp_password,
                   config.etd_ftp_path, config.etd_ftp_port, config.mail_host, config.mail_username,
-                  config.mail_password, config.mail_port, config.marc_mail_to,
-                  config.ingest_path, config.ingest_command, config.repo_base_url)
+                  config.mail_password, config.mail_port, config.marc_mail_to, config.ingest_path,
+                  config.ingest_command, config.ingest_depositor, config.repo_base_url, config.debug_mode)
     if args.only == 'retrieve':
         l.retrieve_etd_files()
     elif args.only == 'marc':

@@ -16,4 +16,6 @@ marc_mail_to = "rdg@gwu.edu"
 # GW ScholarSpace ingest configuration
 ingest_path = "/opt/scholarspace/scholarspace-hyrax"
 ingest_command = "rvmsudo RAILS_ENV=production rake gwss:ingest_etd"
+ingest_depositor = "openaccess@gwu.edu"
 repo_base_url = "https://scholarspace.library.gwu.edu/etd/"
+debug_mode = False
