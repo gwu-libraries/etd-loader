@@ -379,7 +379,7 @@ class EtdLoader:
             record.add_ordered_field(
                 pymarc.Field(
                     tag='008',
-                    data='{}s{}    dcu     obm   000 0 {} d'.format(running_date[2:], comp_date, language)
+                    data='{}s{}    dcu     obm   000 0 {} d'.format(running_date[2:6], comp_date, language)
                 )
             )
 
