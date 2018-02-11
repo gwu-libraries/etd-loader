@@ -553,8 +553,13 @@ class EtdLoader:
         # embargo date
         embargo_elem = metadata_tree.find('DISS_restriction/DISS_sales_restriction')
         if embargo_elem is not None and 'remove' in embargo_elem.attrib:
-            embargo_date = datetime.strptime(embargo_elem.attrib['remove'], '%m/%d/%Y').date()
-            repository_metadata['embargo_date'] = embargo_date.isoformat()
+            repository_metadata['embargo'] = True
+            if embargo_elem.attrib['remove']:
+                embargo_date = datetime.strptime(embargo_elem.attrib['remove'], '%m/%d/%Y').date()
+                repository_metadata['embargo_release_date'] = embargo_date.isoformat()
+            # else the 'remove' element is an empty string, this indicates infinite embargo
+            else: 
+                repository_metadata['embargo_release_date'] = None
 
         # degree
         degree = metadata_tree.findtext('DISS_description/DISS_degree')
