@@ -503,7 +503,8 @@ class EtdLoader:
             'contributor': [],
             'keyword': [],
             'committee_members': [],
-            'advisors': []
+            'advisors': [],
+            'gw_affiliation': []
         }
 
         # creator and contributors
@@ -548,7 +549,7 @@ class EtdLoader:
         # gw_affiliation
         department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
         if department:
-            repository_metadata['gw_affiliation'] = department
+            repository_metadata['gw_affiliation'] = [department]
 
         # embargo date
         embargo_elem = metadata_tree.find('DISS_restriction/DISS_sales_restriction')
