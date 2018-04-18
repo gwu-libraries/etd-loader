@@ -519,7 +519,7 @@ class EtdLoader:
         comp_date = metadata_tree.findtext('DISS_description/DISS_dates/DISS_comp_date')
         completion_year = comp_date[0:4] if (comp_date and len(comp_date) >= 4) else None
         if completion_year:
-            repository_metadata['date_created'] = completion_year
+            repository_metadata['date_created'] = [completion_year]
 
         # keyword
         keywords = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_keyword')
@@ -531,12 +531,12 @@ class EtdLoader:
         # language
         lang = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_language')
         if lang:
-            repository_metadata['language'] = lang
+            repository_metadata['language'] = [lang]
 
         # title
         full_title = metadata_tree.findtext('DISS_description/DISS_title')
         if full_title:
-            repository_metadata['title'] = full_title
+            repository_metadata['title'] = [full_title]
 
         # description
         raw_abstract_text = ""
@@ -544,7 +544,7 @@ class EtdLoader:
             raw_abstract_text += para_elem.text
         abstract_text = BeautifulSoup(raw_abstract_text, 'html.parser').text
         if abstract_text:
-            repository_metadata['description'] = abstract_text
+            repository_metadata['description'] = [abstract_text]
 
         # gw_affiliation
         department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
@@ -565,7 +565,7 @@ class EtdLoader:
         # degree
         degree = metadata_tree.findtext('DISS_description/DISS_degree')
         if degree:
-            repository_metadata['degree'] = degree
+            repository_metadata['degree'] = [degree]
 
         # advisors
         for advisor_elem in metadata_tree.findall('DISS_description/DISS_advisor'):
