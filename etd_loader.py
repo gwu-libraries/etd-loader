@@ -500,10 +500,11 @@ class EtdLoader:
     def create_repository_metadata(self, metadata_tree):
         repository_metadata = {
             # 'title': metadata_tree.find('DISS_description/DISS_title').text
+            'creator': [],
             'contributor': [],
             'keyword': [],
-            'committee_members': [],
-            'advisors': [],
+            'committee_member': [],
+            'advisor': [],
             'gw_affiliation': []
         }
 
@@ -511,7 +512,7 @@ class EtdLoader:
         for author_elem in metadata_tree.findall('DISS_authorship/DISS_author'):
             full_name = self._fullname(author_elem.find('DISS_name'))
             if author_elem.attrib.get('type', 'primary') == 'primary':
-                repository_metadata['creator'] = full_name
+                repository_metadata['creator'].append(full_name)
             else:
                 repository_metadata['contributor'].append(full_name)
 
@@ -569,11 +570,11 @@ class EtdLoader:
 
         # advisors
         for advisor_elem in metadata_tree.findall('DISS_description/DISS_advisor'):
-            repository_metadata['advisors'].append(self._fullname(advisor_elem.find('DISS_name')))
+            repository_metadata['advisor'].append(self._fullname(advisor_elem.find('DISS_name')))
 
         # committee members
         for member_elem in metadata_tree.findall('DISS_description/DISS_cmte_member'):
-            repository_metadata['committee_members'].append(self._fullname(member_elem.find('DISS_name')))
+            repository_metadata['committee_member'].append(self._fullname(member_elem.find('DISS_name')))
 
 
         return repository_metadata
