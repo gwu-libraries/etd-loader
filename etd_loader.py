@@ -500,10 +500,11 @@ class EtdLoader:
     def create_repository_metadata(self, metadata_tree):
         repository_metadata = {
             # 'title': metadata_tree.find('DISS_description/DISS_title').text
+            'creator': [],
             'contributor': [],
             'keyword': [],
-            'committee_members': [],
-            'advisors': [],
+            'committee_member': [],
+            'advisor': [],
             'gw_affiliation': []
         }
 
@@ -511,7 +512,7 @@ class EtdLoader:
         for author_elem in metadata_tree.findall('DISS_authorship/DISS_author'):
             full_name = self._fullname(author_elem.find('DISS_name'))
             if author_elem.attrib.get('type', 'primary') == 'primary':
-                repository_metadata['creator'] = full_name
+                repository_metadata['creator'].append(full_name)
             else:
                 repository_metadata['contributor'].append(full_name)
 
@@ -519,7 +520,7 @@ class EtdLoader:
         comp_date = metadata_tree.findtext('DISS_description/DISS_dates/DISS_comp_date')
         completion_year = comp_date[0:4] if (comp_date and len(comp_date) >= 4) else None
         if completion_year:
-            repository_metadata['date_created'] = completion_year
+            repository_metadata['date_created'] = [completion_year]
 
         # keyword
         keywords = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_keyword')
@@ -531,12 +532,12 @@ class EtdLoader:
         # language
         lang = metadata_tree.findtext('DISS_description/DISS_categorization/DISS_language')
         if lang:
-            repository_metadata['language'] = lang
+            repository_metadata['language'] = [lang]
 
         # title
         full_title = metadata_tree.findtext('DISS_description/DISS_title')
         if full_title:
-            repository_metadata['title'] = full_title
+            repository_metadata['title'] = [full_title]
 
         # description
         raw_abstract_text = ""
@@ -544,7 +545,7 @@ class EtdLoader:
             raw_abstract_text += para_elem.text
         abstract_text = BeautifulSoup(raw_abstract_text, 'html.parser').text
         if abstract_text:
-            repository_metadata['description'] = abstract_text
+            repository_metadata['description'] = [abstract_text]
 
         # gw_affiliation
         department = metadata_tree.findtext('DISS_description/DISS_institution/DISS_inst_contact')
@@ -565,15 +566,15 @@ class EtdLoader:
         # degree
         degree = metadata_tree.findtext('DISS_description/DISS_degree')
         if degree:
-            repository_metadata['degree'] = degree
+            repository_metadata['degree'] = [degree]
 
         # advisors
         for advisor_elem in metadata_tree.findall('DISS_description/DISS_advisor'):
-            repository_metadata['advisors'].append(self._fullname(advisor_elem.find('DISS_name')))
+            repository_metadata['advisor'].append(self._fullname(advisor_elem.find('DISS_name')))
 
         # committee members
         for member_elem in metadata_tree.findall('DISS_description/DISS_cmte_member'):
-            repository_metadata['committee_members'].append(self._fullname(member_elem.find('DISS_name')))
+            repository_metadata['committee_member'].append(self._fullname(member_elem.find('DISS_name')))
 
 
         return repository_metadata
