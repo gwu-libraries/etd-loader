@@ -19,3 +19,4 @@ ingest_command = "rvmsudo RAILS_ENV=production rake gwss:ingest_etd"
 ingest_depositor = "openaccess@gwu.edu"
 repo_base_url = "https://scholarspace-etds.library.gwu.edu/etd/"
 debug_mode = False
+dry_run = False

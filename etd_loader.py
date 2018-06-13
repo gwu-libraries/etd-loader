@@ -45,7 +45,7 @@ class EtdLoader:
     def __init__(self, base_path,
                  etd_ftp_host, etd_ftp_username, etd_ftp_password, etd_ftp_path, etd_ftp_port,
                  mail_host, mail_username, mail_password, mail_port, marc_mail_to, ingest_path,
-                 ingest_command, ingest_depositor, repository_base_url, debug_mode):
+                 ingest_command, ingest_depositor, repository_base_url, debug_mode, dry_run):
         log.info('Base path is %s', base_path)
         self.base_path = base_path
         # Contains ETD files that have been retrieved from ETD FTP
@@ -98,6 +98,7 @@ class EtdLoader:
         self.repository_base_url = repository_base_url
 
         self.debug_mode = debug_mode
+        self.dry_run = dry_run
 
     def retrieve_etd_files(self):
         """
@@ -489,7 +490,8 @@ class EtdLoader:
                 # Perform the import
                 new_etd_id = self.repo_import(repo_metadata_filepath, binary_filepath, attachment_filepaths, etd_id,
                                               self.store.get(etd_id), self.ingest_depositor)
-                self.store[etd_id] = new_etd_id
+                if not self.dry_run:
+                    self.store[etd_id] = new_etd_id
                 # Delete ETD file
                 os.remove(etd_filepath)
             finally:
@@ -614,10 +616,13 @@ class EtdLoader:
             log.info('%s is an update.', etd_id)
             command.extend(['--update-item-id=%s' % repository_id])
         log.info("Command is: %s" % ' '.join(command))
-        output = subprocess.check_output(command, cwd=self.ingest_path)
-        repository_id = output.decode('utf-8').rstrip('\n')
-        log.info('Repository id for %s is %s', etd_id, repository_id)
-        return repository_id
+        if not self.dry_run:
+            output = subprocess.check_output(command, cwd=self.ingest_path)
+            repository_id = output.decode('utf-8').rstrip('\n')
+            log.info('Repository id for %s is %s', etd_id, repository_id)
+            return repository_id
+        else:
+            return "dummy_repository_id"
 
     @staticmethod
     def unzip(zip_filepath, dest_path):
@@ -749,7 +754,8 @@ if __name__ == '__main__':
     l = EtdLoader(config.base_path, config.etd_ftp_host, config.etd_ftp_username, config.etd_ftp_password,
                   config.etd_ftp_path, config.etd_ftp_port, config.mail_host, config.mail_username,
                   config.mail_password, config.mail_port, config.marc_mail_to, config.ingest_path,
-                  config.ingest_command, config.ingest_depositor, config.repo_base_url, config.debug_mode)
+                  config.ingest_command, config.ingest_depositor, config.repo_base_url, config.debug_mode,
+                  config.dry_run)
     if args.only == 'retrieve':
         l.retrieve_etd_files()
     elif args.only == 'marc':
