@@ -492,8 +492,8 @@ class EtdLoader:
                                               self.store.get(etd_id), self.ingest_depositor)
                 if not self.dry_run:
                     self.store[etd_id] = new_etd_id
-                # Delete ETD file
-                os.remove(etd_filepath)
+                    # Delete ETD file
+                    os.remove(etd_filepath)
             finally:
                 if not self.debug_mode:
                     # Delete temporary directory
