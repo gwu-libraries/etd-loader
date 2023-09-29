@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DISS_submission publishing_option="1" embargo_code="0" third_party_search="Y">
+  <DISS_authorship>
+    <DISS_author type="primary">
+      <DISS_name>
+        <DISS_surname>N___</DISS_surname>
+        <DISS_fname>D___</DISS_fname>
+        <DISS_middle>J___</DISS_middle>
+        <DISS_suffix/>
+        <DISS_affiliation>George Washington University</DISS_affiliation>
+      </DISS_name>
+      <DISS_contact type="current">
+        <DISS_contact_effdt>03/17/2009</DISS_contact_effdt>
+        <DISS_phone_fax type="P">
+          <DISS_cntry_cd>1</DISS_cntry_cd>
+          <DISS_area_code>703</DISS_area_code>
+          <DISS_phone_num>xxxxxx</DISS_phone_num>
+          <DISS_phone_ext/>
+        </DISS_phone_fax>
+        <DISS_phone_fax type="F">
+          <DISS_cntry_cd>1</DISS_cntry_cd>
+          <DISS_area_code>703</DISS_area_code>
+          <DISS_phone_num>xxxxx</DISS_phone_num>
+          <DISS_phone_ext/>
+        </DISS_phone_fax>
+        <DISS_address>
+          <DISS_addrline>xxxxxxxxxxxxxx</DISS_addrline>
+          <DISS_city>Leesburg</DISS_city>
+          <DISS_st>VA</DISS_st>
+          <DISS_pcode>xxxxxx</DISS_pcode>
+          <DISS_country>US</DISS_country>
+        </DISS_address>
+        <DISS_email>xxxxxx@verizon.net</DISS_email>
+      </DISS_contact>
+      <DISS_contact type="future">
+        <DISS_contact_effdt>03/17/2009</DISS_contact_effdt>
+        <DISS_phone_fax type="P">
+          <DISS_cntry_cd>1</DISS_cntry_cd>
+          <DISS_area_code>703</DISS_area_code>
+          <DISS_phone_num>xxxxxx</DISS_phone_num>
+          <DISS_phone_ext/>
+        </DISS_phone_fax>
+        <DISS_phone_fax type="F">
+          <DISS_cntry_cd>1</DISS_cntry_cd>
+          <DISS_area_code>703</DISS_area_code>
+          <DISS_phone_num>xxxxxxx</DISS_phone_num>
+          <DISS_phone_ext/>
+        </DISS_phone_fax>
+        <DISS_address>
+          <DISS_addrline>xxxxxxxxxxxxxx</DISS_addrline>
+          <DISS_city>Leesburg</DISS_city>
+          <DISS_st>VA</DISS_st>
+          <DISS_pcode>xxxxxxx</DISS_pcode>
+          <DISS_country>US</DISS_country>
+        </DISS_address>
+        <DISS_email>xxxxxxxl@verizon.net</DISS_email>
+      </DISS_contact>
+      <DISS_citizenship>US</DISS_citizenship>
+    </DISS_author>
+  </DISS_authorship>
+  <DISS_description page_count="398" type="doctoral" external_id="http://dissertations.umi.com/gwu:xxxxx" apply_for_copyright="yes">
+    <DISS_title>Prehospital Patient Triage: In Mass Casualty Incidents: An Engineering Management Analysis And Prototype Strategy Recommendation</DISS_title>
+    <DISS_dates>
+      <DISS_comp_date>2009</DISS_comp_date>
+      <DISS_accept_date>01/01/2009</DISS_accept_date>
+    </DISS_dates>
+    <DISS_degree>D.Sc.</DISS_degree>
+    <DISS_institution>
+      <DISS_inst_code>0075</DISS_inst_code>
+      <DISS_inst_name>The George Washington University</DISS_inst_name>
+      <DISS_inst_contact>Engineering Mgt and Systems Engineering</DISS_inst_contact>
+      <DISS_processing_code>A</DISS_processing_code>
+    </DISS_institution>
+    <DISS_advisor>
+      <DISS_name>
+        <DISS_surname>Harrald</DISS_surname>
+        <DISS_fname>John</DISS_fname>
+        <DISS_middle>R.</DISS_middle>
+      </DISS_name>
+    </DISS_advisor>
+    <DISS_cmte_member>
+      <DISS_name>
+        <DISS_surname>Barbera</DISS_surname>
+        <DISS_fname>Joseph</DISS_fname>
+        <DISS_middle>A.</DISS_middle>
+        <DISS_suffix/>
+        <DISS_affiliation/>
+      </DISS_name>
+    </DISS_cmte_member>
+    <DISS_cmte_member>
+      <DISS_name>
+        <DISS_surname>Shaw</DISS_surname>
+        <DISS_fname>Greg</DISS_fname>
+        <DISS_middle/>
+        <DISS_suffix/>
+        <DISS_affiliation/>
+      </DISS_name>
+    </DISS_cmte_member>
+    <DISS_cmte_member>
+      <DISS_name>
+        <DISS_surname>Fiedrich</DISS_surname>
+        <DISS_fname>Frank</DISS_fname>
+        <DISS_middle/>
+        <DISS_suffix/>
+        <DISS_affiliation/>
+      </DISS_name>
+    </DISS_cmte_member>
+    <DISS_cmte_member>
+      <DISS_name>
+        <DISS_surname>Macintyre</DISS_surname>
+        <DISS_fname>Anthony</DISS_fname>
+        <DISS_middle/>
+        <DISS_suffix/>
+        <DISS_affiliation/>
+      </DISS_name>
+    </DISS_cmte_member>
+    <DISS_categorization>
+      <DISS_category>
+        <DISS_cat_code>0790</DISS_cat_code>
+        <DISS_cat_desc>Systems science</DISS_cat_desc>
+      </DISS_category>
+      <DISS_category>
+        <DISS_cat_code>0769</DISS_cat_code>
+        <DISS_cat_desc>Health care management</DISS_cat_desc>
+      </DISS_category>
+      <DISS_keyword>Mass Casualty, Paramedics, PLUS, START, Triage</DISS_keyword>
+      <DISS_language>en</DISS_language>
+    </DISS_categorization>
+  </DISS_description>
+  <DISS_content>
+    <DISS_abstract>
+      <DISS_para>A significant triage deficiency ("under-triage") may occur when "minor" or "moderate" casualties are actually injured worse than those initially triaged as immediate at the prehospital mass casualty scene.  Some mechanisms of injury will produce casualties with subtle or latent (i.e. hidden or delayed) signs and symptoms not considered in the most commonly used pre-hospital triage algorithm, Simple Triage and Rapid Treatment (START). These include casualties suffering penetrating wounds with initially stable vital signs, pregnant casualties, casualties from unconventional mechanisms such as chemical burns, and smoke and other inhalation exposures.  Using expert opinion and accepted clinical criteria, triage algorithms were developed to re-evaluate patients triaged by START to "minor" and "moderate" categories, and re-direct select casualties to the "immediate" category.  A detailed search of the clinical literature for clinical guidance in early indicators of the above casualty categories was used to develop the algorithms, which were then evaluated via expert clinical judgment. The panel of experts provided further input into triage guidance for the selected mechanisms of injury.  An extension of the triage process beyond START protocols was developed, incorporating triage criteria for each selected injury mechanism or condition: penetrating injuries, unconventional mechanisms of injury (chemical and radiation), and smoke and other inhalation exposure, and pregnant casualties.  The full triage protocol, which is designed for use after START triage when casualty transport is delayed, is called the PLUS Follow-on Prehospital Triage Strategy for Mass Casualty Incidents.  The PLUS Follow-on Prehospital Triage Strategy for Mass Casualty Incidents was tested using actual casualty data from EMS data sets, case studies, and historical accounts by practicing paramedics.  The reproducibility, sensitivity, and specificity of PLUS Follow-on Strategy were calculated.  The PLUS Follow-on Prehospital Triage Strategy for Mass Casualty Incidents may supplement the strengths of an already existing, widely accepted triage strategy, whether it is START or one of the recently developed initial triage algorithms.  PLUS may provide a mechanism to more accurately assess casualties from penetrating trauma, unconventional MOIs, smoke and other inhalational exposure, and pregnant casualties.  This extended triage strategy may minimize under-triage of seriously injured casualties.  The PLUS Follow-on Prehospital Triage Strategy for Mass Casualty Incidents also captures the use of expert thinking of "experienced" personnel doing triage.</DISS_para>
+    </DISS_abstract>
+    <DISS_binary type="PDF">Xxxx_gwu_0075A_10130.pdf</DISS_binary>
+    <DISS_attachment>
+      <DISS_file_name>PLUSFollow-onPrehospitalCasualtyTriageStrategyforMassCasualtyIncidents.jpg</DISS_file_name>
+      <DISS_file_category>image</DISS_file_category>
+      <DISS_file_descr>PLUS Follow-on Prehospital Casualty Triage Strategy for Mass Casualty Incidents</DISS_file_descr>
+    </DISS_attachment>
+    <DISS_attachment>
+      <DISS_file_name>DxxxxxNxxxxxDissertationDefensePowerpoint.pps</DISS_file_name>
+      <DISS_file_category>presentation</DISS_file_category>
+      <DISS_file_descr>PLUS Dissertation Defense Presentation</DISS_file_descr>
+    </DISS_attachment>
+    <DISS_attachment>
+      <DISS_file_name>DxxxxNxxxxCurriculumVitae.pdf</DISS_file_name>
+      <DISS_file_category>pdf</DISS_file_category>
+      <DISS_file_descr>D___ N___ Curriculum Vitae</DISS_file_descr>
+    </DISS_attachment>
+  </DISS_content>
+  <DISS_restriction/>
+  <DISS_repository>
+    <DISS_version/>
+    <DISS_agreement_decision_date/>
+    <DISS_acceptance>0</DISS_acceptance>
+    <DISS_delayed_release/>
+    <DISS_access_option/>
+  </DISS_repository>
+</DISS_submission>
