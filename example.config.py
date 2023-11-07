@@ -14,6 +14,10 @@ mail_password = "password"
 # Where to send MARC records
 marc_mail_to = "rdg@gwu.edu"
 # GW ScholarSpace ingest configuration
+docker_mode = True
+docker_container_name = "scholarspace-hyrax-app-server-1"
+docker_destination = "/opt/scholarspace/scholarspace-tmp/"
+docker_prefix = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc"
 ingest_path = "/opt/scholarspace/scholarspace-hyrax"
 ingest_command = "rvmsudo RAILS_ENV=production rake gwss:ingest_etd"
 ingest_depositor = "openaccess@gwu.edu"

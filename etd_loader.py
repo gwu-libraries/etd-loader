@@ -45,7 +45,8 @@ class EtdLoader:
     def __init__(self, base_path,
                  etd_ftp_host, etd_ftp_username, etd_ftp_password, etd_ftp_path, etd_ftp_port,
                  mail_host, mail_username, mail_password, mail_port, marc_mail_to, ingest_path,
-                 ingest_command, ingest_depositor, repository_base_url, debug_mode, dry_run):
+                 ingest_command, ingest_depositor, repository_base_url, debug_mode, dry_run,
+                 docker_mode, docker_container_name, docker_destination, docker_prefix):
         log.info('Base path is %s', base_path)
         self.base_path = base_path
         # Contains ETD files that have been retrieved from ETD FTP
@@ -92,6 +93,11 @@ class EtdLoader:
         self.mail_port = mail_port
         self.marc_mail_to = marc_mail_to
 
+        self.docker_mode = docker_mode
+        self.docker_container_name = docker_container_name
+        self.docker_destination = docker_destination
+        self.docker_prefix = docker_prefix
+
         self.ingest_path = ingest_path
         self.ingest_command = ingest_command
         self.ingest_depositor = ingest_depositor
@@ -121,6 +127,7 @@ class EtdLoader:
                 log.info("Retrieving %s new ETD files", len(etd_ftp_retrieve_files))
                 for etd_file in etd_ftp_retrieve_files:
                     log.info('Getting %s', etd_file)
+                    # SFTP the file and store in etd_store_path
                     sftp.get(etd_file, localpath=os.path.join(self.etd_store_path, etd_file))
                     # Copy to additional locations
                     shutil.copy(os.path.join(self.etd_store_path, etd_file), self.etd_to_be_imported_path)
@@ -470,7 +477,9 @@ class EtdLoader:
             etd_filepath = os.path.join(self.etd_to_be_imported_path, etd_filename)
             # Create temp directory
             etd_temp_path = tempfile.mkdtemp()
+            repo_metadata_filename = 'metadata.json'
             repo_metadata_filepath = os.path.join(etd_temp_path, 'metadata.json')
+
             try:
                 log.info('Importing %s', etd_filename)
                 metadata_tree = self._extract_metadata_file(os.path.join(self.etd_to_be_imported_path, etd_filename))
@@ -482,14 +491,23 @@ class EtdLoader:
                 self.unzip(etd_filepath, etd_temp_path)
 
                 try:
-                    binary_filepath, attachment_filepaths = self.find_etd_files(metadata_tree, etd_temp_path)
+                    binary_filename, attachment_filenames = self.find_etd_files(metadata_tree, etd_temp_path)
                 except EtdLoaderException as e:
                     log.error("Error importing %s: %s", etd_filename, e)
                     continue
 
+                # If in Docker mode, cp the contents of etd_temp_path into the container
+#                if self.docker_mode and not self.dry_run:
+                self.docker_copy(etd_temp_path)
+
                 # Perform the import
-                new_etd_id = self.repo_import(repo_metadata_filepath, binary_filepath, attachment_filepaths, etd_id,
-                                              self.store.get(etd_id), self.ingest_depositor)
+                new_etd_id = self.repo_import(repo_metadata_filename, binary_filename, attachment_filenames, etd_id,
+                                              self.store.get(etd_id), self.ingest_depositor, etd_temp_path)
+
+                # If in Docker mode, remove the files (in the container) that have now been imported
+#                if self.docker_mode and not self.dry_run:
+                self.docker_rm(etd_temp_path)
+
                 if not self.dry_run:
                     self.store[etd_id] = new_etd_id
                     # Delete ETD file
@@ -586,26 +604,54 @@ class EtdLoader:
         binary_filename = metadata_tree.find('DISS_content/DISS_binary').text
         binary_filepath = os.path.join(etd_temp_path, binary_filename)
         if not os.path.exists(binary_filepath):
-            raise EtdLoaderException('{} is missing'.format(binary_filename))
+            raise EtdLoaderException('{} is missing'.format(binary_filepath))
 
         file_map = {}
         for root, dirnames, filenames in os.walk(etd_temp_path):
             for filename in filenames:
-                file_map[filename] = os.path.join(root, filename)
+#                file_map[filename] = os.path.join(root, filename)
+                file_map[filename] = filename
 
-        attachment_filepaths = []
+        attachment_filenames = []
         for attachment_filename in [elem.text for elem in
                                     metadata_tree.findall('DISS_content/DISS_attachment/DISS_file_name')]:
             if attachment_filename in file_map:
-                attachment_filepaths.append(file_map[attachment_filename])
+                attachment_filenames.append(file_map[attachment_filename])
             else:
                 raise EtdLoaderException('{} is missing'.format(attachment_filename))
 
-        return binary_filepath, attachment_filepaths
+        return binary_filename, attachment_filenames
 
-    def repo_import(self, repo_metadata_filepath, etd_filepath, attachment_filepaths, etd_id, repository_id, depositor):
-        log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filepath, attachment_filepaths)
+
+    def docker_copy(self, source_filepath):
+        command = "docker cp " + os.path.join(source_filepath, "*") + " " + self.docker_container_name + \
+                ':' + self.docker_destination
+        log.info("Docker copy command is: %s" % command)
+        if self.docker_mode and not self.dry_run:
+            subprocess.run(command)
+        return
+
+
+    def docker_rm(self, source_filepath):
+        command = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc \"rm " + os.path.join(self.docker_destination, "*") + "\""
+        log.info("Docker remove command is: %s" % command)
+        if self.docker_mode and not self.dry_run:
+            subprocess.run(command)
+        return
+
+
+    def repo_import(self, repo_metadata_filename, etd_filename, attachment_filenames, etd_id, repository_id, depositor, etd_tmp_path):
+        log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filename, attachment_filenames)
         # rake gwss:ingest_etd -- --manifest='path-to-manifest-json-file' --primaryfile='path-to-primary-attachment-file/myfile.pdf' --otherfiles='path-to-all-other-attachments-folder'
+        if self.docker_mode:
+            repo_metadata_filepath = os.path.join(self.docker_destination, repo_metadata_filename)
+            etd_filepath = os.path.join(self.docker_destination, etd_filename)
+            attachment_filepaths = [os.path.join(self.docker_destination, fn) for fn in attachment_filenames]
+        else:
+            repo_metadata_filepath = os.path.join(etd_temp_path, repo_metadata_filename)
+            etd_filepath = os.path.join(etd_tmp_path, etd_filename)
+            attachment_filepaths = [os.path.join(etd_tmp_path, fn) for fn in attachment_filenames]
+
         command = self.ingest_command.split(' ') + ['--',
                                                     '--manifest=%s' % repo_metadata_filepath,
                                                     '--primaryfile=%s' % etd_filepath,
@@ -616,8 +662,19 @@ class EtdLoader:
             log.info('%s is an update.', etd_id)
             command.extend(['--update-item-id=%s' % repository_id])
         log.info("Command is: %s" % ' '.join(command))
+        if self.docker_mode:
+            docker_command = ' '.join(command)
+            docker_command = self.docker_prefix + ' \"' + docker_command + '\"'
+            log.info("Docker command is: %s" % docker_command)
+
         if not self.dry_run:
-            output = subprocess.check_output(command, cwd=self.ingest_path)
+            if self.docker_mode:
+                docker_command = ' '.join(command)
+                docker_command = self.docker_prefix + ' \"' + docker_command + '\"'
+                log.info("Docker command is: %s" % docker_command)
+                output = subprocess.check_output(docker_command, cwd=self.ingest_path)
+            else:
+                output = subprocess.check_output(command, cwd=self.ingest_path)
             repository_id = output.decode('utf-8').rstrip('\n')
             log.info('Repository id for %s is %s', etd_id, repository_id)
             return repository_id
@@ -755,7 +812,8 @@ if __name__ == '__main__':
                   config.etd_ftp_path, config.etd_ftp_port, config.mail_host, config.mail_username,
                   config.mail_password, config.mail_port, config.marc_mail_to, config.ingest_path,
                   config.ingest_command, config.ingest_depositor, config.repo_base_url, config.debug_mode,
-                  config.dry_run)
+                  config.dry_run, config.docker_mode, config.docker_container_name, config.docker_destination,
+                  config.docker_prefix)
     if args.only == 'retrieve':
         l.retrieve_etd_files()
     elif args.only == 'marc':
