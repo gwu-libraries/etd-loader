@@ -624,11 +624,11 @@ class EtdLoader:
 
 
     def docker_copy(self, source_filepath):
-        command = "docker cp " + os.path.join(source_filepath, "*") + " " + self.docker_container_name + \
+        command = "docker cp " + os.path.join(source_filepath, ".") + " " + self.docker_container_name + \
                 ':' + self.docker_destination
         log.info("Docker copy command is: %s" % command)
         if self.docker_mode and not self.dry_run:
-            subprocess.run(command)
+            subprocess.call(command, shell=True)
         return
 
 
@@ -636,7 +636,7 @@ class EtdLoader:
         command = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc \"rm " + os.path.join(self.docker_destination, "*") + "\""
         log.info("Docker remove command is: %s" % command)
         if self.docker_mode and not self.dry_run:
-            subprocess.run(command)
+            subprocess.call(command, shell=True)
         return
 
 
@@ -672,7 +672,7 @@ class EtdLoader:
                 docker_command = ' '.join(command)
                 docker_command = self.docker_prefix + ' \"' + docker_command + '\"'
                 log.info("Docker command is: %s" % docker_command)
-                output = subprocess.check_output(docker_command, cwd=self.ingest_path)
+                output = subprocess.check_output(docker_command, shell=True)
             else:
                 output = subprocess.check_output(command, cwd=self.ingest_path)
             repository_id = output.decode('utf-8').rstrip('\n')
