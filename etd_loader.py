@@ -648,7 +648,7 @@ class EtdLoader:
             repo_metadata_filepath = os.path.join(self.docker_destination, tmp_basename, repo_metadata_filename)
             etd_filepath = os.path.join(self.docker_destination, tmp_basename, etd_filename)
             attachment_filepaths = \
-                    [os.path.join(self.docker_destination, tmp_basename, fp.lstrip(etd_tmp_path)) \
+                    [os.path.join(self.docker_destination, tmp_basename, "'" + fp.lstrip(etd_tmp_path).lstrip("'").rstrip("'") + "'") \
                     for fp in attachment_filepaths]
         else:
             repo_metadata_filepath = os.path.join(etd_temp_path, repo_metadata_filename)
