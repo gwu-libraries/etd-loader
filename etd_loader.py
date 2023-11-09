@@ -491,22 +491,17 @@ class EtdLoader:
                 self.unzip(etd_filepath, etd_temp_path)
 
                 try:
-                    binary_filename, attachment_filenames = self.find_etd_files(metadata_tree, etd_temp_path)
+                    binary_filename, attachment_filepaths = self.find_etd_files(metadata_tree, etd_temp_path)
                 except EtdLoaderException as e:
                     log.error("Error importing %s: %s", etd_filename, e)
                     continue
 
                 # If in Docker mode, cp the contents of etd_temp_path into the container
-#                if self.docker_mode and not self.dry_run:
                 self.docker_copy(etd_temp_path)
 
                 # Perform the import
-                new_etd_id = self.repo_import(repo_metadata_filename, binary_filename, attachment_filenames, etd_id,
+                new_etd_id = self.repo_import(repo_metadata_filename, binary_filename, attachment_filepaths, etd_id,
                                               self.store.get(etd_id), self.ingest_depositor, etd_temp_path)
-
-                # If in Docker mode, remove the files (in the container) that have now been imported
-#                if self.docker_mode and not self.dry_run:
-                self.docker_rm(etd_temp_path)
 
                 if not self.dry_run:
                     self.store[etd_id] = new_etd_id
@@ -609,8 +604,7 @@ class EtdLoader:
         file_map = {}
         for root, dirnames, filenames in os.walk(etd_temp_path):
             for filename in filenames:
-#                file_map[filename] = os.path.join(root, filename)
-                file_map[filename] = filename
+                file_map[filename] = os.path.join(root, filename)
 
         attachment_filenames = []
         for attachment_filename in [elem.text for elem in
@@ -624,8 +618,14 @@ class EtdLoader:
 
 
     def docker_copy(self, source_filepath):
+        # Make directory to receive contents
+        command = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc \"mkdir " + os.path.join(self.docker_destination, os.path.basename(source_filepath)) + "\""
+        log.info("Docker mkdir command is: %s" % command)
+        if self.docker_mode and not self.dry_run:
+            subprocess.call(command, shell=True)
+
         command = "docker cp " + os.path.join(source_filepath, ".") + " " + self.docker_container_name + \
-                ':' + self.docker_destination
+                ':' + os.path.join(self.docker_destination, os.path.basename(source_filepath))
         log.info("Docker copy command is: %s" % command)
         if self.docker_mode and not self.dry_run:
             subprocess.call(command, shell=True)
@@ -640,18 +640,22 @@ class EtdLoader:
         return
 
 
-    def repo_import(self, repo_metadata_filename, etd_filename, attachment_filenames, etd_id, repository_id, depositor, etd_tmp_path):
-        log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filename, attachment_filenames)
+    def repo_import(self, repo_metadata_filename, etd_filename, attachment_filepaths, etd_id, repository_id, depositor, etd_tmp_path):
+        log.info('Importing %s. ETD file is %s and attachements are %s', etd_id, etd_filename, attachment_filepaths)
         # rake gwss:ingest_etd -- --manifest='path-to-manifest-json-file' --primaryfile='path-to-primary-attachment-file/myfile.pdf' --otherfiles='path-to-all-other-attachments-folder'
         if self.docker_mode:
-            repo_metadata_filepath = os.path.join(self.docker_destination, repo_metadata_filename)
-            etd_filepath = os.path.join(self.docker_destination, etd_filename)
-            attachment_filepaths = [os.path.join(self.docker_destination, fn) for fn in attachment_filenames]
+            tmp_basename = os.path.basename(etd_tmp_path)
+            repo_metadata_filepath = os.path.join(self.docker_destination, tmp_basename, repo_metadata_filename)
+            etd_filepath = os.path.join(self.docker_destination, tmp_basename, etd_filename)
+            attachment_filepaths = \
+                    [os.path.join(self.docker_destination, tmp_basename, fp.lstrip(etd_tmp_path)) \
+                    for fp in attachment_filepaths]
         else:
             repo_metadata_filepath = os.path.join(etd_temp_path, repo_metadata_filename)
             etd_filepath = os.path.join(etd_tmp_path, etd_filename)
-            attachment_filepaths = [os.path.join(etd_tmp_path, fn) for fn in attachment_filenames]
+            attachment_filepaths = [os.path.join(etd_tmp_path, fp) for fn in attachment_filepaths]
 
+        log.info("******* attachment_filepaths after adjustment = " + ', '.join(attachment_filepaths))
         command = self.ingest_command.split(' ') + ['--',
                                                     '--manifest=%s' % repo_metadata_filepath,
                                                     '--primaryfile=%s' % etd_filepath,
