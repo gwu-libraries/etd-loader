@@ -619,7 +619,7 @@ class EtdLoader:
 
     def docker_copy(self, source_filepath):
         # Make directory to receive contents
-        command = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc \"mkdir " + os.path.join(self.docker_destination, os.path.basename(source_filepath)) + "\""
+        command = "docker exec -it --user scholarspace scholarspace-hyrax-app-server-1 bash -lc \"mkdir -p " + os.path.join(self.docker_destination, os.path.basename(source_filepath)) + "\""
         log.info("Docker mkdir command is: %s" % command)
         if self.docker_mode and not self.dry_run:
             subprocess.call(command, shell=True)
